@@ -55,6 +55,27 @@ def main():
             st.info("Nenhum funcionário cadastrado.")
         else:
             st.dataframe(df)
+            df_func = sistema.dataframe_funcionarios()
+            df_reg = sistema.dataframe_registros()
+
+            if not df_func.empty and not df_reg.empty:
+                st.markdown("### Detalhes de um funcionário")
+                opcoes = {
+                    f"{row['matricula']} - {row['nome']}": str(row["matricula"])
+                    for _, row in df_func.iterrows()
+                }
+                chave = st.selectbox("Selecione o funcionário", list(opcoes.keys()))
+                matricula_sel = opcoes[chave]
+
+                dados = df_func[df_func["matricula"] == matricula_sel]
+                historico = df_reg[df_reg["matricula"] == matricula_sel].sort_values("timestamp")
+
+                st.markdown("#### Dados cadastrais")
+                st.dataframe(dados)
+
+                st.markdown("#### Histórico de ponto")
+                st.dataframe(historico)
+
 
     # ---------- REGISTRAR PONTO ----------
     elif menu == "Registrar Ponto":
@@ -90,7 +111,36 @@ def main():
             st.info("Nenhum registro encontrado.")
         else:
             df["timestamp"] = pd.to_datetime(df["timestamp"])
-            st.dataframe(df.sort_values("timestamp", ascending=False))
+
+            st.markdown("### Filtros")
+
+            # filtro por funcionário (opcional)
+            funcionarios = sorted(df["matricula"].unique())
+            matricula_filtro = st.selectbox(
+                "Filtrar por funcionário (opcional)",
+                ["Todos"] + funcionarios,
+            )
+
+            # filtro por intervalo de datas
+            data_min = df["timestamp"].dt.date.min()
+            data_max = df["timestamp"].dt.date.max()
+            data_inicio, data_fim = st.date_input(
+                "Intervalo de datas",
+                (data_min, data_max),
+            )
+
+            filtrado = df.copy()
+            if matricula_filtro != "Todos":
+                filtrado = filtrado[filtrado["matricula"] == matricula_filtro]
+
+            filtrado = filtrado[
+                (filtrado["timestamp"].dt.date >= data_inicio)
+                & (filtrado["timestamp"].dt.date <= data_fim)
+            ].sort_values("timestamp", ascending=False)
+
+            st.dataframe(filtrado)
+
+            
 
     # ---------- GRÁFICOS ----------
     elif menu == "Gráficos":
