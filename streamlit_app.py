@@ -101,25 +101,23 @@ def main():
         else:
             col1, col2 = st.columns(2)
 
-            # Barras - idade
+            # Barras - idade (usa serviço, salva PNG e mostra no Streamlit)
             with col1:
                 st.markdown("**Funcionários ordenados por idade**")
-                df_plot = df_func.sort_values("idade").set_index("nome")[["idade"]]
-                st.bar_chart(df_plot)
+                fig_idade = sistema.grafico_barras_por_idade(show=False)
+                if fig_idade is None:
+                    st.info("Sem dados para o gráfico.")
+                else:
+                    st.pyplot(fig_idade)
 
-            # Pizza - turno
+            # Pizza - turno (usa serviço, salva PNG e mostra no Streamlit)
             with col2:
                 st.markdown("**Funcionários por turno**")
-                contagem = df_func["turno"].value_counts()
-                if contagem.empty:
-                    st.info("Sem dados suficientes para o gráfico.")
+                fig_turno = sistema.grafico_pizza_por_turno(show=False)
+                if fig_turno is None:
+                    st.info("Sem dados para o gráfico.")
                 else:
-                    import matplotlib.pyplot as plt
-
-                    fig, ax = plt.subplots()
-                    ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%")
-                    ax.set_title("Distribuição de funcionários por turno")
-                    st.pyplot(fig)
+                    st.pyplot(fig_turno)
 
 
 if __name__ == "__main__":

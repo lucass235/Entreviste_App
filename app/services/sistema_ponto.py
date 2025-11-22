@@ -1,11 +1,11 @@
-from __future__ import annotations
-
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from app.config import GRAFICO_IDADE, GRAFICO_TURNO
 from app.models.funcionario import Funcionario
 from app.models.turno import Turno
 from app.models.registro_ponto import RegistroPonto
@@ -132,10 +132,16 @@ class SistemaPonto:
 
     # ---------- GRÁFICOS ----------
 
-    def grafico_barras_por_idade(self, show: bool = True):
+    def grafico_barras_por_idade(
+        self,
+        show: bool = True,
+        save_path: Optional[Path | str] = None,
+    ):
         """
         Gráfico de barras com funcionários ordenados por idade.
-        Se show=False, retorna a Figure.
+
+        - show=True: mostra o gráfico na tela (CLI)
+        - save_path: caminho do arquivo PNG (se None, usa config.GRAFICO_IDADE)
         """
         df = self.dataframe_funcionarios()
         if df.empty:
@@ -154,15 +160,26 @@ class SistemaPonto:
             label.set_ha("right")
         fig.tight_layout()
 
+        # salva na pasta graficos
+        save_path = Path(save_path or GRAFICO_IDADE)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(save_path)
+
         if show:
             plt.show()
 
         return fig
 
-    def grafico_pizza_por_turno(self, show: bool = True):
+    def grafico_pizza_por_turno(
+        self,
+        show: bool = True,
+        save_path: Optional[Path | str] = None,
+    ):
         """
         Gráfico de pizza com a distribuição de funcionários por turno.
-        Se show=False, retorna a Figure.
+
+        - show=True: mostra o gráfico na tela (CLI)
+        - save_path: caminho do arquivo PNG (se None, usa config.GRAFICO_TURNO)
         """
         df = self.dataframe_funcionarios()
         if df.empty:
@@ -175,6 +192,11 @@ class SistemaPonto:
         ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%")
         ax.set_title("Distribuição de funcionários por turno")
         fig.tight_layout()
+
+        # salva na pasta graficos
+        save_path = Path(save_path or GRAFICO_TURNO)
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(save_path)
 
         if show:
             plt.show()
