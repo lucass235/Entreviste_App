@@ -70,6 +70,48 @@ class SistemaPonto:
 
     def listar_funcionarios(self) -> List[Funcionario]:
         return list(self._funcionarios.values())
+    
+    # ---------- APOIO AOS CASOS DE USO / ATORES ----------
+
+    def confirmar_matricula(self, matricula: str) -> bool:
+        """
+        Caso de uso 'Confirmar matrícula'.
+        Retorna True se a matrícula estiver cadastrada.
+        """
+        return str(matricula) in self._funcionarios
+
+    def editar_funcionario(
+        self,
+        matricula: str,
+        nome: Optional[str] = None,
+        idade: Optional[int] = None,
+        turno: Optional[str] = None,
+    ) -> None:
+        """
+        Edita os dados de um funcionário já cadastrado.
+        """
+        matricula = str(matricula)
+
+        if matricula not in self._funcionarios:
+            raise ValueError("Funcionário não encontrado.")
+
+        funcionario = self._funcionarios[matricula]
+
+        if nome is not None:
+            funcionario.nome = nome
+
+        if idade is not None:
+            funcionario.idade = int(idade)
+
+        if turno is not None:
+            try:
+                turno_enum = Turno[turno.upper()]
+            except KeyError:
+                raise ValueError("Turno inválido. Use: MATUTINO, VESPERTINO ou NOTURNO.")
+            funcionario.turno = turno_enum
+
+        # Persiste alterações no CSV
+        self.employee_repo.save_all(self.listar_funcionarios())
 
     # ---------- REGISTROS DE PONTO (EVENTOS) ----------
 
